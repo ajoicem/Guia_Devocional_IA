@@ -6,7 +6,10 @@ from database import (
     criar_conversa,
     salvar_mensagem,
     carregar_mensagens,
-    listar_conversas
+    listar_conversas,
+    entrar,
+    criar_conta,
+    sair
 )
 
 # =====================================================
@@ -185,10 +188,8 @@ div[data-testid="collapsedControl"] button {
 
 .devocional-hero {
     text-align: center;
-    margin-top: 0;
+    margin-top: 0.15rem;
     margin-bottom: 1.7rem;
-    padding-top: 12px;
-    overflow: visible !important;
 }
 
 .devocional-title {
@@ -198,22 +199,16 @@ div[data-testid="collapsedControl"] button {
     gap: 10px;
 
     font-size: 2.35rem;
-    line-height: 1.5;
+    line-height: 1.15;
     font-weight: 800;
     letter-spacing: -0.55px;
 
     color: var(--brand-gold) !important;
-
-    padding-top: 8px;
-    padding-bottom: 4px;
-    overflow: visible !important;
 }
 
 .devocional-title-icon {
     font-size: 2rem;
-    line-height: 1.3;
-    display: inline-flex;
-    align-items: center;
+    line-height: 1;
 }
 
 
@@ -325,7 +320,6 @@ div[data-testid="stChatInput"] button:hover {
     padding-top: 1.4rem;
     padding-bottom: 0.5rem;
     text-align: center;
-    background: transparent !important;
     border-top: 1px solid rgba(196, 154, 74, 0.28);
 }
 
@@ -337,11 +331,10 @@ div[data-testid="stChatInput"] button:hover {
 }
 
 .footer-text {
-    color: #6B6258 !important;
+    color: var(--st-text-color) !important;
     font-size: 0.84rem;
     line-height: 1.6;
-    opacity: 1;
-    background: transparent !important;
+    opacity: 0.82;
 }
 
 
@@ -409,6 +402,121 @@ co = cohere.Client(api_key)
 
 
 # =====================================================
+# AUTENTICAÇÃO
+# =====================================================
+
+if "access_token" not in st.session_state:
+    st.session_state.access_token = None
+
+if "refresh_token" not in st.session_state:
+    st.session_state.refresh_token = None
+
+if "user_id" not in st.session_state:
+    st.session_state.user_id = None
+
+if "user_email" not in st.session_state:
+    st.session_state.user_email = None
+
+
+def usuario_logado():
+    return bool(
+        st.session_state.access_token
+        and st.session_state.refresh_token
+        and st.session_state.user_id
+    )
+
+
+if not usuario_logado():
+    st.markdown(
+        '<div class="devocional-hero">'
+        '<div class="devocional-title">'
+        '<span class="devocional-title-icon">📖</span>'
+        '<span>Guia Devocional IA</span>'
+        '</div>'
+        '<div class="devocional-subtitle-box">'
+        'Entre para iniciar seus estudos e manter seu histórico privado.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    aba_entrar, aba_cadastrar = st.tabs(["Entrar", "Criar conta"])
+
+    with aba_entrar:
+        with st.form("form_login"):
+            email_login = st.text_input("E-mail", key="email_login")
+            senha_login = st.text_input("Senha", type="password", key="senha_login")
+            enviar_login = st.form_submit_button("Entrar", use_container_width=True)
+
+        if enviar_login:
+            if not email_login or not senha_login:
+                st.warning("Preencha e-mail e senha.")
+            else:
+                try:
+                    resposta = entrar(email_login.strip(), senha_login)
+
+                    if not resposta.session or not resposta.user:
+                        st.error("Não foi possível iniciar a sessão.")
+                    else:
+                        st.session_state.access_token = resposta.session.access_token
+                        st.session_state.refresh_token = resposta.session.refresh_token
+                        st.session_state.user_id = resposta.user.id
+                        st.session_state.user_email = resposta.user.email
+                        st.query_params.clear()
+                        st.rerun()
+
+                except Exception:
+                    st.error("E-mail ou senha inválidos, ou a conta ainda não foi confirmada.")
+
+    with aba_cadastrar:
+        with st.form("form_cadastro"):
+            email_cadastro = st.text_input("E-mail", key="email_cadastro")
+            senha_cadastro = st.text_input(
+                "Senha",
+                type="password",
+                key="senha_cadastro",
+                help="Use pelo menos 6 caracteres."
+            )
+            confirmar_senha = st.text_input(
+                "Confirmar senha",
+                type="password",
+                key="confirmar_senha"
+            )
+            enviar_cadastro = st.form_submit_button(
+                "Criar conta",
+                use_container_width=True
+            )
+
+        if enviar_cadastro:
+            if not email_cadastro or not senha_cadastro:
+                st.warning("Preencha e-mail e senha.")
+            elif senha_cadastro != confirmar_senha:
+                st.warning("As senhas não coincidem.")
+            elif len(senha_cadastro) < 6:
+                st.warning("A senha precisa ter pelo menos 6 caracteres.")
+            else:
+                try:
+                    resposta = criar_conta(email_cadastro.strip(), senha_cadastro)
+
+                    if resposta.session and resposta.user:
+                        st.session_state.access_token = resposta.session.access_token
+                        st.session_state.refresh_token = resposta.session.refresh_token
+                        st.session_state.user_id = resposta.user.id
+                        st.session_state.user_email = resposta.user.email
+                        st.success("Conta criada com sucesso.")
+                        st.rerun()
+                    else:
+                        st.success(
+                            "Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login."
+                        )
+
+                except Exception as erro:
+                    st.error(f"Não foi possível criar a conta: {erro}")
+
+    st.stop()
+
+
+# =====================================================
 # CONVERSA ATUAL
 # =====================================================
 
@@ -432,6 +540,24 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
+    st.caption(st.session_state.user_email or "Usuário conectado")
+
+    if st.button("Sair", use_container_width=True):
+        try:
+            sair(
+                st.session_state.access_token,
+                st.session_state.refresh_token
+            )
+        except Exception:
+            pass
+
+        st.session_state.access_token = None
+        st.session_state.refresh_token = None
+        st.session_state.user_id = None
+        st.session_state.user_email = None
+        st.query_params.clear()
+        st.rerun()
+
     st.divider()
 
     if st.button(
@@ -445,7 +571,11 @@ with st.sidebar:
 
     st.subheader("Conversas")
 
-    conversas = listar_conversas()
+    conversas = listar_conversas(
+        st.session_state.user_id,
+        st.session_state.access_token,
+        st.session_state.refresh_token
+    )
 
     if not conversas:
         st.caption("Nenhuma conversa salva ainda.")
@@ -504,7 +634,12 @@ else:
 # =====================================================
 
 if conversation_id:
-    historico = carregar_mensagens(conversation_id)
+    historico = carregar_mensagens(
+        conversation_id,
+        st.session_state.user_id,
+        st.session_state.access_token,
+        st.session_state.refresh_token
+    )
 else:
     historico = []
 
@@ -538,7 +673,12 @@ if pergunta:
 
         titulo = pergunta.strip()[:50]
 
-        conversation_id = criar_conversa(titulo)
+        conversation_id = criar_conversa(
+            titulo,
+            st.session_state.user_id,
+            st.session_state.access_token,
+            st.session_state.refresh_token
+        )
 
         st.query_params["conversation_id"] = conversation_id
 
@@ -548,7 +688,9 @@ if pergunta:
     salvar_mensagem(
         conversation_id,
         "user",
-        pergunta
+        pergunta,
+        st.session_state.access_token,
+        st.session_state.refresh_token
     )
 
     instrucoes = """
@@ -594,7 +736,9 @@ if pergunta:
     salvar_mensagem(
         conversation_id,
         "assistant",
-        resposta
+        resposta,
+        st.session_state.access_token,
+        st.session_state.refresh_token
     )
 
     st.rerun()
