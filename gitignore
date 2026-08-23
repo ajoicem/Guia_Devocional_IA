@@ -1,0 +1,23 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ambiente virtual
+venv/
+.venv/
+
+# Secrets / variáveis de ambiente
+.env
+.streamlit/secrets.toml
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
