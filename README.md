@@ -6,6 +6,9 @@ O **Guia Devocional IA** é uma aplicação desenvolvida com inteligência artif
 
 O projeto combina **IA generativa, interface web e banco de dados**, permitindo que o usuário faça perguntas, receba explicações e mantenha um histórico persistente de conversas.
 
+🌐 Aplicação online
+
+[**Clique aqui para acessar o Guia Devocional IA**](https://guia-devocional-ia.streamlit.app/)
 ---
 
 ## ✨ Sobre o projeto
