@@ -428,6 +428,9 @@ if "user_email" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "chat"
+
 
 def usuario_logado():
     return bool(
@@ -445,7 +448,7 @@ if not usuario_logado():
         '<span>Guia Devocional IA</span>'
         '</div>'
         '<div class="devocional-subtitle-box">'
-        'Entre para iniciar seus estudos e manter seu histórico privado.'
+        'Explore as Escrituras, esclareça dúvidas e aprofunde seu entendimento com o apoio da inteligência artificial.'
         '</div>'
         '</div>',
         unsafe_allow_html=True
@@ -587,7 +590,15 @@ with st.sidebar:
         "✦ Nova conversa",
         use_container_width=True
     ):
+        st.session_state.pagina = "chat"
         st.query_params.clear()
+        st.rerun()
+
+    if st.button(
+        "ℹ️ Sobre o projeto",
+        use_container_width=True
+    ):
+        st.session_state.pagina = "sobre"
         st.rerun()
 
     st.divider()
@@ -613,8 +624,55 @@ with st.sidebar:
                 key=f"conversa_{conversa['id']}",
                 use_container_width=True
             ):
+                st.session_state.pagina = "chat"
                 st.query_params["conversation_id"] = conversa["id"]
                 st.rerun()
+
+
+# =====================================================
+# PÁGINA SOBRE O PROJETO
+# =====================================================
+
+if st.session_state.pagina == "sobre":
+    st.markdown(
+        '<div class="devocional-hero">'
+        '<div class="devocional-title">'
+        '<span class="devocional-title-icon">📖</span>'
+        '<span>Sobre o Guia Devocional IA</span>'
+        '</div>'
+        '<div class="devocional-subtitle-box">'
+        'Conheça a proposta e as tecnologias por trás do projeto.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+### Como nasceu
+
+O **Guia Devocional IA** nasceu do amor pelas Escrituras e do desejo de aprender cada vez mais com a Palavra de Deus.
+
+A proposta é utilizar a inteligência artificial como uma ferramenta de apoio ao estudo bíblico, ajudando a esclarecer dúvidas, compreender contextos, explorar passagens e aprofundar entendimentos, sempre mantendo a Escritura como referência principal.
+
+A IA pode agregar conhecimento e auxiliar na compreensão, mas deve ser usada com responsabilidade, sem alterar o sentido do texto bíblico ou substituir a leitura e o estudo das Escrituras.
+
+### Tecnologias utilizadas
+
+**Python • Streamlit • Cohere • Supabase • PostgreSQL • GitHub**
+
+O **ChatGPT, da OpenAI**, também foi utilizado como ferramenta de apoio durante o desenvolvimento, auxiliando na estruturação, revisão de código e resolução de problemas.
+
+> **A tecnologia auxilia. A Palavra permanece no centro.**
+        """
+    )
+
+    st.link_button(
+        "in  LinkedIn",
+        "https://www.linkedin.com/in/joice-marques-a556a12b0/"
+    )
+
+    st.stop()
 
 
 # =====================================================
@@ -630,7 +688,7 @@ if not conversation_id:
         '<span>Olá! O que você gostaria de estudar hoje?</span>'
         '</div>'
         '<div class="devocional-subtitle-box">'
-        'Seu assistente para estudo, contexto e reflexão bíblica.'
+        'Explore as Escrituras, esclareça dúvidas e aprofunde seu entendimento com o apoio da inteligência artificial.'
         '</div>'
         '</div>',
         unsafe_allow_html=True
@@ -767,29 +825,3 @@ if pergunta:
     st.rerun()
 
 
-# =====================================================
-# RODAPÉ / SOBRE O PROJETO
-# Exibido somente na tela inicial
-# =====================================================
-
-if not conversation_id:
-    st.markdown(
-        '<div class="app-footer">'
-        '<div class="footer-title">Sobre o projeto</div>'
-        '<div class="footer-text">'
-        'O Guia Devocional IA é um assistente desenvolvido para apoiar o estudo bíblico, '
-        'oferecendo contexto, explicações e reflexões com inteligência artificial.<br>'
-        'Desenvolvido com Python, Streamlit, Cohere e Supabase/PostgreSQL.'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    col1, col2, col3 = st.columns([1.5, 1, 1.5])
-
-    with col2:
-        st.link_button(
-            "in  LinkedIn",
-            "https://www.linkedin.com/in/joice-marques-a556a12b0/",
-            use_container_width=True
-        )
