@@ -188,8 +188,10 @@ div[data-testid="collapsedControl"] button {
 
 .devocional-hero {
     text-align: center;
-    margin-top: 0.15rem;
+    margin-top: 0;
     margin-bottom: 1.7rem;
+    padding-top: 18px;
+    overflow: visible !important;
 }
 
 .devocional-title {
@@ -198,17 +200,23 @@ div[data-testid="collapsedControl"] button {
     align-items: center;
     gap: 10px;
 
-    font-size: 2.35rem;
-    line-height: 1.15;
+    font-size: 2.25rem;
+    line-height: 1.35;
     font-weight: 800;
-    letter-spacing: -0.55px;
+    letter-spacing: -0.45px;
 
     color: var(--brand-gold) !important;
+
+    padding: 10px 0 6px 0;
+    overflow: visible !important;
 }
 
 .devocional-title-icon {
-    font-size: 2rem;
-    line-height: 1;
+    font-size: 1.95rem;
+    line-height: 1.35;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 
@@ -417,6 +425,9 @@ if "user_id" not in st.session_state:
 if "user_email" not in st.session_state:
     st.session_state.user_email = None
 
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
+
 
 def usuario_logado():
     return bool(
@@ -462,6 +473,10 @@ if not usuario_logado():
                         st.session_state.refresh_token = resposta.session.refresh_token
                         st.session_state.user_id = resposta.user.id
                         st.session_state.user_email = resposta.user.email
+                        st.session_state.user_name = (
+                            (resposta.user.user_metadata or {}).get("full_name")
+                            or resposta.user.email
+                        )
                         st.query_params.clear()
                         st.rerun()
 
@@ -470,6 +485,7 @@ if not usuario_logado():
 
     with aba_cadastrar:
         with st.form("form_cadastro"):
+            nome_cadastro = st.text_input("Nome", key="nome_cadastro")
             email_cadastro = st.text_input("E-mail", key="email_cadastro")
             senha_cadastro = st.text_input(
                 "Senha",
@@ -488,26 +504,32 @@ if not usuario_logado():
             )
 
         if enviar_cadastro:
-            if not email_cadastro or not senha_cadastro:
-                st.warning("Preencha e-mail e senha.")
+            if not nome_cadastro or not email_cadastro or not senha_cadastro:
+                st.warning("Preencha nome, e-mail e senha.")
             elif senha_cadastro != confirmar_senha:
                 st.warning("As senhas não coincidem.")
             elif len(senha_cadastro) < 6:
                 st.warning("A senha precisa ter pelo menos 6 caracteres.")
             else:
                 try:
-                    resposta = criar_conta(email_cadastro.strip(), senha_cadastro)
+                    resposta = criar_conta(
+                        nome_cadastro.strip(),
+                        email_cadastro.strip(),
+                        senha_cadastro
+                    )
 
                     if resposta.session and resposta.user:
                         st.session_state.access_token = resposta.session.access_token
                         st.session_state.refresh_token = resposta.session.refresh_token
                         st.session_state.user_id = resposta.user.id
                         st.session_state.user_email = resposta.user.email
+                        st.session_state.user_name = nome_cadastro.strip()
                         st.success("Conta criada com sucesso.")
                         st.rerun()
                     else:
-                        st.success(
-                            "Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login."
+                        st.warning(
+                            "A conta foi criada, mas o Supabase ainda está exigindo confirmação por e-mail. "
+                            "Desative a confirmação de e-mail no painel do Supabase para entrar imediatamente."
                         )
 
                 except Exception as erro:
@@ -540,7 +562,7 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.caption(st.session_state.user_email or "Usuário conectado")
+    st.caption(st.session_state.user_name or st.session_state.user_email or "Usuário conectado")
 
     if st.button("Sair", use_container_width=True):
         try:
@@ -555,6 +577,7 @@ with st.sidebar:
         st.session_state.refresh_token = None
         st.session_state.user_id = None
         st.session_state.user_email = None
+        st.session_state.user_name = None
         st.query_params.clear()
         st.rerun()
 
