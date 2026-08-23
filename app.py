@@ -47,25 +47,12 @@ st.markdown("""
    Usa as cores do próprio tema Light/Dark do Streamlit
 ----------------------------------------------------- */
 
-html,
-body,
-[data-testid="stAppViewContainer"],
-.stApp {
-    background-color: #F8F4EA !important; /* Cor de fundo clara */
-    color: #172437 !important;
-}
+/* O tema Light/Dark fica sob controle do próprio Streamlit.
+   Não forçamos fundo claro nem escuro na página, header ou barra inferior. */
 
 [data-testid="stHeader"] {
-    background-color: #F8F4EA !important;
+    background: transparent !important;
     border-bottom: none !important;
-    box-shadow: none !important;
-}
-
-/* Força a barra inferior (onde fica o chat_input) a ficar clara */
-[data-testid="stBottom"],
-[data-testid="stBottomBlockContainer"] {
-    background-color: #F8F4EA !important;
-    border-top: none !important;
     box-shadow: none !important;
 }
 
@@ -234,7 +221,7 @@ div[data-testid="collapsedControl"] button {
     background: transparent !important;
     border: 1px solid rgba(196, 154, 74, 0.34);
 
-    color: var(--st-text-color) !important;
+    color: inherit !important;
 
     font-size: 0.94rem;
     line-height: 1.45;
@@ -251,13 +238,13 @@ div[data-testid="collapsedControl"] button {
 div[data-testid="stChatMessage"],
 div[data-testid="stChatMessage"] p,
 div[data-testid="stChatMessage"] li {
-    color: var(--st-text-color) !important;
+    color: inherit !important;
 }
 
 h1,
 h2,
 h3 {
-    color: var(--st-text-color) !important;
+    color: inherit !important;
 }
 
 div[data-testid="stChatMessage"] {
@@ -277,23 +264,20 @@ div[data-testid="stChatMessage"] {
 ----------------------------------------------------- */
 
 div[data-testid="stChatInput"] {
-    background-color: #F8F4EA !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-/* Caixa em volta do campo de texto */
+/* Mantém a identidade visual, mas o fundo continua sendo do tema Light/Dark */
 div[data-testid="stChatInput"] > div {
-    background-color: #FFFFFF !important; /* Fundo branco interno */
     border: 1px solid var(--brand-gold) !important;
     border-radius: 10px !important;
     box-shadow: none !important;
 }
 
-/* Área de texto onde o usuário digita */
+/* Não força fundo nem cor do texto: o Streamlit alterna automaticamente */
 div[data-testid="stChatInput"] textarea {
-    background-color: transparent !important;
-    color: #172437 !important; /* Cor do texto digitado */
+    background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
@@ -339,7 +323,7 @@ div[data-testid="stChatInput"] button:hover {
 }
 
 .footer-text {
-    color: var(--st-text-color) !important;
+    color: inherit !important;
     font-size: 0.84rem;
     line-height: 1.6;
     opacity: 0.82;
@@ -428,9 +412,6 @@ if "user_email" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "chat"
-
 
 def usuario_logado():
     return bool(
@@ -448,7 +429,7 @@ if not usuario_logado():
         '<span>Guia Devocional IA</span>'
         '</div>'
         '<div class="devocional-subtitle-box">'
-        'Explore as Escrituras, esclareça dúvidas e aprofunde seu entendimento com o apoio da inteligência artificial.'
+        'Entre para iniciar seus estudos e manter seu histórico privado.'
         '</div>'
         '</div>',
         unsafe_allow_html=True
@@ -590,15 +571,7 @@ with st.sidebar:
         "✦ Nova conversa",
         use_container_width=True
     ):
-        st.session_state.pagina = "chat"
         st.query_params.clear()
-        st.rerun()
-
-    if st.button(
-        "ℹ️ Sobre o projeto",
-        use_container_width=True
-    ):
-        st.session_state.pagina = "sobre"
         st.rerun()
 
     st.divider()
@@ -624,55 +597,8 @@ with st.sidebar:
                 key=f"conversa_{conversa['id']}",
                 use_container_width=True
             ):
-                st.session_state.pagina = "chat"
                 st.query_params["conversation_id"] = conversa["id"]
                 st.rerun()
-
-
-# =====================================================
-# PÁGINA SOBRE O PROJETO
-# =====================================================
-
-if st.session_state.pagina == "sobre":
-    st.markdown(
-        '<div class="devocional-hero">'
-        '<div class="devocional-title">'
-        '<span class="devocional-title-icon">📖</span>'
-        '<span>Sobre o Guia Devocional IA</span>'
-        '</div>'
-        '<div class="devocional-subtitle-box">'
-        'Conheça a proposta e as tecnologias por trás do projeto.'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-### Como nasceu
-
-O **Guia Devocional IA** nasceu do amor pelas Escrituras e do desejo de aprender cada vez mais com a Palavra de Deus.
-
-A proposta é utilizar a inteligência artificial como uma ferramenta de apoio ao estudo bíblico, ajudando a esclarecer dúvidas, compreender contextos, explorar passagens e aprofundar entendimentos, sempre mantendo a Escritura como referência principal.
-
-A IA pode agregar conhecimento e auxiliar na compreensão, mas deve ser usada com responsabilidade, sem alterar o sentido do texto bíblico ou substituir a leitura e o estudo das Escrituras.
-
-### Tecnologias utilizadas
-
-**Python • Streamlit • Cohere • Supabase • PostgreSQL • GitHub**
-
-O **ChatGPT, da OpenAI**, também foi utilizado como ferramenta de apoio durante o desenvolvimento, auxiliando na estruturação, revisão de código e resolução de problemas.
-
-> **A tecnologia auxilia. A Palavra permanece no centro.**
-        """
-    )
-
-    st.link_button(
-        "in  LinkedIn",
-        "https://www.linkedin.com/in/joice-marques-a556a12b0/"
-    )
-
-    st.stop()
 
 
 # =====================================================
@@ -688,7 +614,7 @@ if not conversation_id:
         '<span>Olá! O que você gostaria de estudar hoje?</span>'
         '</div>'
         '<div class="devocional-subtitle-box">'
-        'Explore as Escrituras, esclareça dúvidas e aprofunde seu entendimento com o apoio da inteligência artificial.'
+        'Seu assistente para estudo, contexto e reflexão bíblica.'
         '</div>'
         '</div>',
         unsafe_allow_html=True
@@ -825,3 +751,29 @@ if pergunta:
     st.rerun()
 
 
+# =====================================================
+# RODAPÉ / SOBRE O PROJETO
+# Exibido somente na tela inicial
+# =====================================================
+
+if not conversation_id:
+    st.markdown(
+        '<div class="app-footer">'
+        '<div class="footer-title">Sobre o projeto</div>'
+        '<div class="footer-text">'
+        'O Guia Devocional IA é um assistente desenvolvido para apoiar o estudo bíblico, '
+        'oferecendo contexto, explicações e reflexões com inteligência artificial.<br>'
+        'Desenvolvido com Python, Streamlit, Cohere e Supabase/PostgreSQL.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    col1, col2, col3 = st.columns([1.5, 1, 1.5])
+
+    with col2:
+        st.link_button(
+            "in  LinkedIn",
+            "https://www.linkedin.com/in/joice-marques-a556a12b0/",
+            use_container_width=True
+        )
