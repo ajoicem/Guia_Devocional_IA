@@ -578,15 +578,6 @@ with st.sidebar:
         st.query_params.clear()
         st.rerun()
 
-    st.markdown("### Tipo de resposta")
-
-    modo_resposta = st.radio(
-        "Escolha como deseja receber as respostas:",
-        ["Resumo", "Estudo aprofundado"],
-        index=0,
-        label_visibility="collapsed"
-    )
-
     if st.button(
         "ℹ️ Sobre o projeto",
         use_container_width=True
