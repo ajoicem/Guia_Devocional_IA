@@ -462,7 +462,7 @@ if not usuario_logado():
                         st.session_state.user_email = resposta.user.email
                         st.session_state.user_name = (
                             (resposta.user.user_metadata or {}).get("full_name")
-                            or resposta.user.email
+                            or "Usuário"
                         )
                         st.query_params.clear()
                         st.rerun()
@@ -549,7 +549,7 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.caption(st.session_state.user_name or st.session_state.user_email or "Usuário conectado")
+    st.caption(st.session_state.user_name or "Usuário")
 
     if st.button("Sair", use_container_width=True):
         try:
@@ -665,8 +665,8 @@ O **ChatGPT, da OpenAI**, também foi utilizado como ferramenta de apoio durante
 
 if not conversation_id:
 
-    nome_usuario = st.session_state.get("user_name") or ""
-    saudacao = f"Olá, {nome_usuario}! O que você gostaria de aprender hoje?" if nome_usuario else "Olá! O que você gostaria de aprender hoje?"
+    nome_usuario = st.session_state.get("user_name") or "Usuário"
+    saudacao = f"Olá, {nome_usuario}! O que você gostaria de aprender hoje?"
 
     st.markdown(
         '<div class="devocional-hero">'
