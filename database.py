@@ -32,7 +32,7 @@ def entrar(email, senha):
 def criar_conta(nome, email, senha):
     supabase = conectar()
 
-    return supabase.auth.sign_up({
+    resposta = supabase.auth.sign_up({
         "email": email,
         "password": senha,
         "options": {
@@ -41,6 +41,22 @@ def criar_conta(nome, email, senha):
             }
         }
     })
+
+    # Com confirmação de e-mail desativada, a sessão já existe.
+    # Atualizamos os metadados também após o cadastro para garantir
+    # que o nome digitado fique salvo no usuário do Supabase.
+    if resposta.session:
+        supabase.auth.set_session(
+            resposta.session.access_token,
+            resposta.session.refresh_token
+        )
+        supabase.auth.update_user({
+            "data": {
+                "full_name": nome
+            }
+        })
+
+    return resposta
 
 
 def sair(access_token=None, refresh_token=None):
