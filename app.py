@@ -665,11 +665,14 @@ O **ChatGPT, da OpenAI**, também foi utilizado como ferramenta de apoio durante
 
 if not conversation_id:
 
+    nome_usuario = st.session_state.get("user_name") or ""
+    saudacao = f"Olá, {nome_usuario}! O que você gostaria de aprender hoje?" if nome_usuario else "Olá! O que você gostaria de aprender hoje?"
+
     st.markdown(
         '<div class="devocional-hero">'
         '<div class="devocional-title">'
         '<span class="devocional-title-icon">📖</span>'
-        '<span>Olá! O que você gostaria de estudar hoje?</span>'
+        f'<span>{saudacao}</span>'
         '</div>'
         '<div class="devocional-subtitle-box">'
         'Explore as Escrituras, esclareça dúvidas e aprofunde seu entendimento com o apoio da inteligência artificial.'
@@ -802,7 +805,7 @@ if pergunta:
 
     try:
 
-        with st.spinner("Preparando seu estudo..."):
+        with st.spinner("Preparando sua resposta..."):
 
             response = co.chat(
                 model="command-a-03-2025",
