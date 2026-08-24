@@ -578,6 +578,15 @@ with st.sidebar:
         st.query_params.clear()
         st.rerun()
 
+    st.markdown("### Tipo de resposta")
+
+    modo_resposta = st.radio(
+        "Escolha como deseja receber as respostas:",
+        ["Resumo", "Estudo aprofundado"],
+        index=0,
+        label_visibility="collapsed"
+    )
+
     if st.button(
         "ℹ️ Sobre o projeto",
         use_container_width=True
@@ -758,23 +767,46 @@ if pergunta:
         st.session_state.refresh_token
     )
 
+    if modo_resposta == "Resumo":
+        estilo_resposta = """
+        Responda de forma curta ou média.
+        Comece pela resposta essencial.
+        Apresente apenas os pontos mais importantes para compreender a pergunta.
+        Evite textos muito longos, excesso de tópicos e repetições.
+        Quando necessário, explique o contexto bíblico de forma resumida.
+        O aprofundamento deve acontecer somente se o usuário pedir ou escolher o modo aprofundado.
+        """
+    else:
+        estilo_resposta = """
+        Desenvolva um estudo mais aprofundado.
+        Quando apropriado, apresente:
+        - contexto histórico e literário;
+        - explicação da passagem;
+        - conexões bíblicas relevantes;
+        - interpretação equilibrada;
+        - aplicação prática.
+
+        Mesmo no estudo aprofundado, mantenha clareza, organização e evite repetições desnecessárias.
+        """
+
     instrucoes = """
     Você é o Guia Devocional, um assistente especializado
     em estudo bíblico e reflexão.
 
     Responda de maneira clara, respeitosa e acolhedora.
-
-    Quando apropriado:
-    - explique o contexto do texto bíblico;
-    - apresente uma interpretação equilibrada;
-    - sugira aplicações práticas;
-    - diferencie interpretação do texto de aplicação pessoal.
-
+    Diferencie interpretação do texto de aplicação pessoal.
     Não invente referências bíblicas.
+    Não altere o sentido do texto bíblico.
     """
 
     mensagem = f"""
     {instrucoes}
+
+    Modo escolhido pelo usuário:
+    {modo_resposta}
+
+    Orientação de resposta:
+    {estilo_resposta}
 
     Pergunta do usuário:
     {pergunta}
