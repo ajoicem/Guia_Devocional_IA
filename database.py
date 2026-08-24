@@ -1,4 +1,5 @@
 import os
+
 from supabase import create_client
 
 
@@ -28,17 +29,23 @@ def entrar(email, senha):
     })
 
 
-def criar_conta(email, senha):
+def criar_conta(nome, email, senha):
     supabase = conectar()
 
     return supabase.auth.sign_up({
         "email": email,
-        "password": senha
+        "password": senha,
+        "options": {
+            "data": {
+                "full_name": nome
+            }
+        }
     })
 
 
 def sair(access_token=None, refresh_token=None):
     supabase = conectar(access_token, refresh_token)
+
     return supabase.auth.sign_out()
 
 
@@ -86,7 +93,6 @@ def carregar_mensagens(
 ):
     supabase = conectar(access_token, refresh_token)
 
-    # Confirma primeiro que a conversa pertence ao usuário logado.
     conversa = (
         supabase.table("conversations")
         .select("id")
